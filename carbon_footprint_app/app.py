@@ -21,38 +21,56 @@ def apply_custom_style():
     
     # Load the background image using the utility function
     b64_image = get_base64_image("carbonreduction1.jpg")
-    background_style = ""
+    
+    # Initialize background CSS property string with fallback color
+    background_css = "background-color: #121212;"
+    
     if b64_image:
-        # Use the base64 string in the CSS background URL
-        background_style = f"""
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{b64_image}");
-            background-size: cover; 
-            background-attachment: fixed;
-            color: white;
-        }}
+        # CONSOLIDATED FIX: Use the specific background properties for max compatibility
+        background_css = f"""
+        background: url("data:image/jpg;base64,{b64_image}") no-repeat center center fixed; 
+        background-size: cover;
+        background-color: #121212; /* Fallback/Blend color */
         """
+    
+    # Use the data-testid selector for the most reliable background application
+    # and ensure the main content area is transparent
+    background_style = f"""
+    [data-testid="stAppViewContainer"] {{
+        {background_css}
+    }}
+    /* Ensure the main page content also allows the background to show through */
+    .main {{
+        background: none !important;
+    }}
+    """
 
     font_css = """
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
     
-    html, body, [class*="stApp"], .main {{
+    html, body, [class*="stApp"], .main {
         font-family: 'Roboto', sans-serif !important;
-    }}
+    }
     """
     
+    # Merging all CSS styles
     style_css = f"""
     <style>
+    {font_css}
+
+    /* BACKGROUND FIX: Targeting the main Streamlit container for max reliability */
     {background_style}
-    /* Overall Dark Background (as fallback if image fails) */
+
+    /* General App Container Styling */
     .stApp {{
-        background-color: #121212; 
-        color: white;
+        color: white; /* Ensures text is readable against the dark background */
     }}
+    
     /* Removes the default background from main Streamlit blocks */
     .main .block-container {{
         background: none; 
     }}
+    
     /* Style for the 'Next Fact' button */
     .next-fact-container button {{
         background-color: #2D2D2D; /* Dark Gray */
@@ -84,7 +102,7 @@ def apply_custom_style():
     </style>
     """
     
-    st.markdown(f"<style>{font_css}</style>", unsafe_allow_html=True)
+    # Applying the styles
     st.markdown(style_css, unsafe_allow_html=True)
 
 # Apply styles before anything else
